@@ -1,12 +1,60 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { getProductsByCollection } from '@/lib/products';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
+import { formatPrice } from '@/lib/currency';
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  specialPrice?: number;
+  image: string;
+  category: string;
+  stock: number;
+  collection?: string;
+  gender?: 'male' | 'female' | 'unisex';
+  productType: string;
+  isNewArrival?: boolean;
+}
 
 export default function SummerCollectionPage() {
-  const products = getProductsByCollection('summer');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getProductsByCollection('summer');
+        setProducts(data);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <span className="ml-3 text-gray-600">Loading products...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -48,14 +96,14 @@ export default function SummerCollectionPage() {
                 {product.specialPrice ? (
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-bold text-red-600">
-                      ${product.specialPrice.toFixed(2)}
+                      {formatPrice(product.specialPrice)}
                     </span>
                     <span className="text-sm line-through text-gray-500">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </span>
                   </div>
                 ) : (
-                  <p className="text-xl font-bold">${product.price.toFixed(2)}</p>
+                  <p className="text-xl font-bold">{formatPrice(product.price)}</p>
                 )}
               </div>
             </CardContent>

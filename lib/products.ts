@@ -1,4 +1,5 @@
 import { Product } from '@/types';
+import { api } from './api';
 
 // All available categories organized by product type
 export const allCategories = {
@@ -886,34 +887,89 @@ export const products: Product[] = [
   ...productsByCategory.study
 ];
 
-export function getProducts(): Product[] {
-  return products;
+// API-based functions
+export async function getProducts(): Promise<Product[]> {
+  try {
+    const response = await api.getProducts();
+    return response.data || [];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return products; // Fallback to local data
+  }
 }
 
-export function getProductById(id: string): Product | undefined {
-  return products.find(p => p.id === id);
+export async function getProductById(id: string): Promise<Product | undefined> {
+  try {
+    const response = await api.getProductById(id);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return products.find(p => p.id === id); // Fallback
+  }
 }
 
-export function getProductsByCollection(collection: string): Product[] {
-  return products.filter(p => p.collection === collection);
+export async function getProductsByCollection(collection: string): Promise<Product[]> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products/collection/${collection}`);
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching products by collection:', error);
+    return products.filter(p => p.collection === collection); // Fallback
+  }
 }
 
-export function getNewArrivals(): Product[] {
-  return products.filter(p => p.isNewArrival === true);
+export async function getNewArrivals(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products/filter/new-arrivals`);
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching new arrivals:', error);
+    return products.filter(p => p.isNewArrival === true); // Fallback
+  }
 }
 
-export function getSpecialPricingProducts(): Product[] {
-  return products.filter(p => p.specialPrice !== undefined);
+export async function getSpecialPricingProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products/filter/special-pricing`);
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching special pricing products:', error);
+    return products.filter(p => p.specialPrice !== undefined); // Fallback
+  }
 }
 
+export async function getProductsByType(type: 'perfume' | 'tea' | 'coffee' | 'powerbank' | 'earbuds' | 'toy' | 'accessory' | 'bottle' | 'study'): Promise<Product[]> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/products/type/${type}`);
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching products by type:', error);
+    return products.filter(p => p.productType === type); // Fallback
+  }
+}
+
+// Synchronous helper functions
 export function getProductsByGender(gender: 'male' | 'female' | 'unisex'): Product[] {
   return products.filter(p => p.gender === gender);
 }
 
-export function getProductsByType(type: 'perfume' | 'tea' | 'coffee' | 'powerbank' | 'earbuds' | 'toy' | 'accessory' | 'bottle' | 'study'): Product[] {
-  return products.filter(p => p.productType === type);
-}
-
 export function getProductsByCategory(productType: keyof typeof allCategories): string[] {
   return allCategories[productType] || [];
+}
+
+// Local sync versions for backward compatibility
+export function getProductsSync(): Product[] {
+  return products;
+}
+
+export function getProductByIdSync(id: string): Product | undefined {
+  return products.find(p => p.id === id);
+}
+
+export function getProductsByTypeSync(type: string): Product[] {
+  return products.filter(p => p.productType === type);
 }

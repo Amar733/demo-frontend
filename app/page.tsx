@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { productsByCategory } from '@/lib/products';
-import { formatPrice } from '@/lib/currency';
 import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Product } from '@/types';
 import { useRouter } from 'next/navigation';
+import { ProductCard } from '@/components/add-to-cart';
+import { api } from '@/lib/api';
 
 function ProductSection({ 
   title, 
@@ -66,39 +66,9 @@ function ProductSection({
             className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide px-12"
           >
             {products.map(product => (
-              <Link 
-                key={product.id} 
-                href={`/products/${product.id}`} 
-                className="flex-shrink-0 w-[280px]"
-              >
-                <div className="border rounded-lg p-4 hover:shadow-lg transition-shadow h-full">
-                  <div className="aspect-square relative mb-4 bg-gray-100 rounded">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-cover rounded"
-                    />
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
-                  <div className="flex items-center gap-2">
-                    {product.specialPrice ? (
-                      <>
-                        <p className="text-xl font-bold text-red-600">{formatPrice(product.specialPrice)}</p>
-                        <p className="text-sm text-gray-500 line-through">{formatPrice(product.price)}</p>
-                      </>
-                    ) : (
-                      <p className="text-xl font-bold">{formatPrice(product.price)}</p>
-                    )}
-                  </div>
-                  {product.isNewArrival && (
-                    <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                      New
-                    </span>
-                  )}
-                </div>
-              </Link>
+              <div key={product.id} className="flex-shrink-0 w-[280px]">
+                <ProductCard product={product} showAddToCart={true} />
+              </div>
             ))}
           </div>
         </div>
@@ -110,13 +80,42 @@ function ProductSection({
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.getProducts();
+        setAllProducts(response.data || []);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        // Fallback to local data
+        setAllProducts([
+          ...productsByCategory.perfume,
+          ...productsByCategory.tea,
+          ...productsByCategory.coffee,
+          ...productsByCategory.powerbank,
+          ...productsByCategory.earbuds,
+          ...productsByCategory.toy,
+          ...productsByCategory.accessory,
+          ...productsByCategory.bottle,
+          ...productsByCategory.study
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Debounce search - redirect after user stops typing
   useEffect(() => {
     if (searchQuery.trim()) {
       const timeoutId = setTimeout(() => {
         router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
-      }, 800); // Wait 800ms after user stops typing
+      }, 800);
 
       return () => clearTimeout(timeoutId);
     }
@@ -132,6 +131,10 @@ export default function Home() {
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
   };
+
+  // Helper to filter products by type
+  const getByType = (type: string) => allProducts.filter(p => p.productType === type);
+  const getNewArrivals = () => allProducts.filter(p => p.isNewArrival);
 
   return (
     <div className="min-h-screen">
@@ -209,75 +212,69 @@ export default function Home() {
       </section>
 
       {/* Product Sections by Category */}
-      <ProductSection 
-        title="✨ New Arrivals" 
-        products={[
-          ...productsByCategory.perfume.filter(p => p.isNewArrival),
-          ...productsByCategory.coffee.filter(p => p.isNewArrival),
-          ...productsByCategory.tea.filter(p => p.isNewArrival),
-          ...productsByCategory.powerbank.filter(p => p.isNewArrival),
-          ...productsByCategory.earbuds.filter(p => p.isNewArrival),
-          ...productsByCategory.toy.filter(p => p.isNewArrival),
-          ...productsByCategory.accessory.filter(p => p.isNewArrival),
-          ...productsByCategory.bottle.filter(p => p.isNewArrival),
-          ...productsByCategory.study.filter(p => p.isNewArrival)
-        ]} 
-        viewAllLink="/collections/new-arrivals"
-      />
+      {!loading && (
+        <>
+          <ProductSection 
+            title="✨ New Arrivals" 
+            products={getNewArrivals()} 
+            viewAllLink="/collections/new-arrivals"
+          />
 
-      <ProductSection 
-        title="☕ Coffee Collection" 
-        products={productsByCategory.coffee} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="☕ Coffee Collection" 
+            products={getByType('coffee')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="🍵 Premium Teas" 
-        products={productsByCategory.tea} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="🍵 Premium Teas" 
+            products={getByType('tea')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="🌸 Signature Perfumes" 
-        products={productsByCategory.perfume} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="🌸 Signature Perfumes" 
+            products={getByType('perfume')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="🔋 Power Banks" 
-        products={productsByCategory.powerbank} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="🔋 Power Banks" 
+            products={getByType('powerbank')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="🎧 Wireless Earbuds" 
-        products={productsByCategory.earbuds} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="🎧 Wireless Earbuds" 
+            products={getByType('earbuds')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="🧸 Toys & Games" 
-        products={productsByCategory.toy} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="🧸 Toys & Games" 
+            products={getByType('toy')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="💧 Water Bottles" 
-        products={productsByCategory.bottle} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="💧 Water Bottles" 
+            products={getByType('bottle')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="📚 Study Essentials" 
-        products={productsByCategory.study} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="📚 Study Essentials" 
+            products={getByType('study')} 
+            viewAllLink="/products"
+          />
 
-      <ProductSection 
-        title="👔 Accessories" 
-        products={productsByCategory.accessory} 
-        viewAllLink="/products"
-      />
+          <ProductSection 
+            title="👔 Accessories" 
+            products={getByType('accessory')} 
+            viewAllLink="/products"
+          />
+        </>
+      )}
     </div>
   );
 }

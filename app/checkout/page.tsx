@@ -1,6 +1,21 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function CheckoutPage() {
+  const [mobile, setMobile] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+    setMobile(value);
+  };
+
+  const handlePostalCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
+    setPostalCode(value);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle checkout logic
@@ -18,11 +33,18 @@ export default function CheckoutPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
             <input
-              type="email"
-              placeholder="Email"
+              type="tel"
+              placeholder="Mobile Number"
+              value={mobile}
+              onChange={handleMobileChange}
+              pattern="\d*"
+              inputMode="numeric"
               className="w-full border rounded-lg px-4 py-2"
               required
+              minLength={10}
+              maxLength={15}
             />
+            <p className="text-xs text-gray-500 mt-1">Enter numbers only (10-15 digits)</p>
           </div>
 
           {/* Shipping Address */}
@@ -48,12 +70,21 @@ export default function CheckoutPage() {
                   className="border rounded-lg px-4 py-2"
                   required
                 />
-                <input
-                  type="text"
-                  placeholder="Postal Code"
-                  className="border rounded-lg px-4 py-2"
-                  required
-                />
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Postal Code"
+                    value={postalCode}
+                    onChange={handlePostalCodeChange}
+                    pattern="\d*"
+                    inputMode="numeric"
+                    className="border rounded-lg px-4 py-2 w-full"
+                    required
+                    minLength={4}
+                    maxLength={10}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Numbers only</p>
+                </div>
               </div>
             </div>
           </div>
