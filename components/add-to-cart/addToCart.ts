@@ -1,62 +1,141 @@
 import { Product, CartItem } from '@/types';
-import { addToCart as addToCartUtil, getEmptyCart } from '@/lib/cart';
-
-const CART_STORAGE_KEY = 'ecommerce_cart';
+import { api } from '@/lib/api';
 
 /**
- * Get cart from localStorage
+ * Transform backend cart to frontend format
  */
-export function getCartFromStorage() {
-  if (typeof window === 'undefined') return getEmptyCart();
-  
+function transformBackendCart(backendCart: any) {
+  if (!backendCart || !backendCart.items) {
+    return { items: [], total: 0 };
+  }
+
+  const items = backendCart.items.map((item: any) => ({
+    product: {
+      id: item.product._id || item.product.id,
+      name: item.product.name,
+      description: item.product.description || '',
+      price: item.product.price,
+      specialPrice: item.product.specialPrice,
+      image: item.product.image,
+      category: item.product.category || '',
+      stock: item.product.stock,
+      collection: item.product.collection,
+      isNewArrival: item.product.isNewArrival,
+      gender: item.product.gender,
+      productType: item.product.productType,
+    },
+    quantity: item.quantity,
+  }));
+
+  const total = items.reduce((sum: number, item: CartItem) => {
+    const price = item.product.specialPrice || item.product.price;
+    return sum + (price * item.quantity);
+  }, 0);
+
+  return { items, total };
+}
+
+/**
+ * Get cart from backend API
+ */
+export async function getCart() {
   try {
-    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (storedCart) {
-      return JSON.parse(storedCart);
+    const response = await api.getCart();
+    if (response.success && response.data) {
+      const cart = transformBackendCart(response.data);
+      // Dispatch event for components listening to cart updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+      }
+      return cart;
     }
+    return { items: [], total: 0 };
   } catch (error) {
-    console.error('Error reading cart from localStorage:', error);
+    console.error('Error fetching cart:', error);
+    return { items: [], total: 0 };
   }
-  
-  return getEmptyCart();
 }
 
 /**
- * Save cart to localStorage
+ * Add product to cart via backend API
  */
-export function saveCartToStorage(cart: any) {
-  if (typeof window === 'undefined') return;
-  
+export async function addProductToCart(product: Product, quantity: number = 1) {
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-    // Dispatch custom event for other components to listen
-    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+    const response = await api.addToCart(product.id, quantity);
+    if (response.success && response.data) {
+      const cart = transformBackendCart(response.data);
+      // Dispatch event for components listening to cart updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+      }
+      return cart;
+    }
+    throw new Error('Failed to add product to cart');
   } catch (error) {
-    console.error('Error saving cart to localStorage:', error);
+    console.error('Error adding to cart:', error);
+    throw error;
   }
 }
 
 /**
- * Add product to cart and save to localStorage
+ * Update cart item quantity
  */
-export function addProductToCart(product: Product, quantity: number = 1) {
-  const currentCart = getCartFromStorage();
-  const updatedCart = addToCartUtil(currentCart, product, quantity);
-  saveCartToStorage(updatedCart);
-  return updatedCart;
+export async function updateCartItemQuantity(productId: string, quantity: number) {
+  try {
+    const response = await api.updateCartItem(productId, quantity);
+    if (response.success && response.data) {
+      const cart = transformBackendCart(response.data);
+      // Dispatch event for components listening to cart updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+      }
+      return cart;
+    }
+    throw new Error('Failed to update cart item');
+  } catch (error) {
+    console.error('Error updating cart item:', error);
+    throw error;
+  }
 }
 
 /**
- * Get cart item count
+ * Remove item from cart
  */
-export function getCartItemCount() {
-  const cart = getCartFromStorage();
-  return cart.items.reduce((total: number, item: CartItem) => total + item.quantity, 0);
+export async function removeFromCart(productId: string) {
+  try {
+    const response = await api.removeFromCart(productId);
+    if (response.success && response.data) {
+      const cart = transformBackendCart(response.data);
+      // Dispatch event for components listening to cart updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: cart }));
+      }
+      return cart;
+    }
+    throw new Error('Failed to remove item from cart');
+  } catch (error) {
+    console.error('Error removing from cart:', error);
+    throw error;
+  }
 }
 
 /**
  * Clear entire cart
  */
-export function clearCart() {
-  saveCartToStorage(getEmptyCart());
+export async function clearCart() {
+  try {
+    const response = await api.clearCart();
+    if (response.success) {
+      const emptyCart = { items: [], total: 0 };
+      // Dispatch event for components listening to cart updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: emptyCart }));
+      }
+      return emptyCart;
+    }
+    throw new Error('Failed to clear cart');
+  } catch (error) {
+    console.error('Error clearing cart:', error);
+    throw error;
+  }
 }

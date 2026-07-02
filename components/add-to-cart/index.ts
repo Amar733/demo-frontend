@@ -4,8 +4,8 @@ export { ProductGrid } from './ProductGrid';
 export { useCart } from './useCart';
 export { 
   addProductToCart, 
-  getCartFromStorage, 
-  saveCartToStorage,
-  getCartItemCount,
+  getCart,
+  updateCartItemQuantity,
+  removeFromCart,
   clearCart
 } from './addToCart';

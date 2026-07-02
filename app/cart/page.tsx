@@ -1,82 +1,85 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import CartItem from '@/components/CartItem';
-import { useCart, getCartFromStorage, saveCartToStorage, clearCart as clearLocalCart } from '@/components/add-to-cart';
-import { updateQuantity, removeFromCart as removeFromCartUtil } from '@/lib/cart';
+import { useCart } from '@/components/add-to-cart';
+import { updateCartItemQuantity, removeFromCart, clearCart } from '@/components/add-to-cart/addToCart';
 import { formatPrice } from '@/lib/currency';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api';
 
 export default function CartPage() {
-  const { cart, itemCount, total } = useCart();
+  const { cart, itemCount, total, isLoading } = useCart();
   const { isAuthenticated } = useAuth();
-  const [syncing, setSyncing] = useState(false);
-
-  // Sync local cart with backend when authenticated
-  useEffect(() => {
-    const syncCart = async () => {
-      if (isAuthenticated && cart.items.length > 0 && !syncing) {
-        setSyncing(true);
-        try {
-          // Add each item to backend cart
-          for (const item of cart.items) {
-            await api.addToCart(item.product.id, item.quantity);
-          }
-        } catch (error) {
-          console.error('Error syncing cart:', error);
-        } finally {
-          setSyncing(false);
-        }
-      }
-    };
-
-    syncCart();
-  }, [isAuthenticated]);
 
   const handleUpdateQuantity = async (productId: string, quantity: number) => {
-    if (isAuthenticated) {
-      try {
-        await api.updateCartItem(productId, quantity);
-      } catch (error) {
-        console.error('Error updating cart item:', error);
-      }
+    if (!isAuthenticated) {
+      alert('Please login to update cart');
+      return;
     }
-    
-    const currentCart = getCartFromStorage();
-    const updatedCart = updateQuantity(currentCart, productId, quantity);
-    saveCartToStorage(updatedCart);
+
+    try {
+      await updateCartItemQuantity(productId, quantity);
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      alert('Failed to update cart item. Please try again.');
+    }
   };
 
   const handleRemove = async (productId: string) => {
-    if (isAuthenticated) {
-      try {
-        await api.removeFromCart(productId);
-      } catch (error) {
-        console.error('Error removing from cart:', error);
-      }
+    if (!isAuthenticated) {
+      alert('Please login to modify cart');
+      return;
     }
-    
-    const currentCart = getCartFromStorage();
-    const updatedCart = removeFromCartUtil(currentCart, productId);
-    saveCartToStorage(updatedCart);
+
+    try {
+      await removeFromCart(productId);
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      alert('Failed to remove item. Please try again.');
+    }
   };
 
   const handleClearCart = async () => {
+    if (!isAuthenticated) {
+      alert('Please login to clear cart');
+      return;
+    }
+
     if (confirm('Are you sure you want to clear your entire cart?')) {
-      if (isAuthenticated) {
-        try {
-          await api.clearCart();
-        } catch (error) {
-          console.error('Error clearing cart:', error);
-        }
+      try {
+        await clearCart();
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+        alert('Failed to clear cart. Please try again.');
       }
-      clearLocalCart();
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold mb-4">Loading your cart...</h1>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold mb-4">Please Login</h1>
+        <p className="text-gray-600 mb-8">You need to be logged in to view your cart.</p>
+        <Link
+          href="/"
+          className="bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition inline-block"
+        >
+          Go to Home
+        </Link>
+      </div>
+    );
+  }
 
   if (cart.items.length === 0) {
     return (
