@@ -43,6 +43,10 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
     return null;
   }
 
+  // Safe display name with fallback
+  const displayName = user.name || user.email || user.mobile || 'User';
+  const displayInitial = displayName.charAt(0).toUpperCase();
+
   return (
     <div className="relative" ref={menuRef}>
       <button
@@ -51,9 +55,9 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
         className="flex items-center gap-2 hover:bg-gray-100 px-3 py-2 rounded-md transition-colors"
       >
         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center font-medium shadow-sm">
-          {user.name.charAt(0).toUpperCase()}
+          {displayInitial}
         </div>
-        <span className="font-medium text-gray-700">{user.name}</span>
+        <span className="font-medium text-gray-700">{displayName}</span>
         <ChevronDown 
           className={`w-4 h-4 text-gray-500 transition-transform ${showMenu ? 'rotate-180' : ''}`} 
         />
@@ -63,8 +67,8 @@ export default function UserMenu({ onLogout }: UserMenuProps) {
         <div className="absolute right-0 mt-2 w-56 bg-white border rounded-lg shadow-lg py-1 z-50 animate-in fade-in slide-in-from-top-2">
           {/* User Info Section */}
           <div className="px-4 py-3 border-b">
-            <p className="text-sm font-medium text-gray-900">{user.name}</p>
-            <p className="text-xs text-gray-500 mt-1">{user.email}</p>
+            <p className="text-sm font-medium text-gray-900">{displayName}</p>
+            <p className="text-xs text-gray-500 mt-1">{user.email || user.mobile}</p>
           </div>
 
           {/* Menu Items */}

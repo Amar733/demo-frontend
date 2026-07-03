@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://demo-backend-1-uc12.onrender.com/' 
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://demo-backend-1-uc12.onrender.com/api' 
 // || 'http://localhost:5000/api';
 
 // API Endpoints
