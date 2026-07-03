@@ -13,9 +13,16 @@ export function useCart() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch cart from backend on mount
+    // Fetch cart from backend on mount - only if user is authenticated
     const loadCart = async () => {
       try {
+        // Check if user is authenticated before loading cart
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token) {
+          setIsLoading(false);
+          return;
+        }
+
         const fetchedCart = await getCart();
         setCart(fetchedCart);
         setItemCount(fetchedCart.items.reduce((total: number, item: CartItem) => total + item.quantity, 0));

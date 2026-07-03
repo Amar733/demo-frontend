@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hook/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -12,12 +12,12 @@ interface SignupDialogProps {
 
 export default function SignupDialog({ onClose, onSwitchToLogin }: SignupDialogProps) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { signup } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,6 +26,12 @@ export default function SignupDialog({ onClose, onSwitchToLogin }: SignupDialogP
     // Validate name
     if (!name.trim()) {
       setError('Please enter your name');
+      return;
+    }
+
+    // Validate mobile
+    if (!mobile.trim()) {
+      setError('Please enter your mobile number');
       return;
     }
 
@@ -44,12 +50,8 @@ export default function SignupDialog({ onClose, onSwitchToLogin }: SignupDialogP
     setLoading(true);
 
     try {
-      const result = await register({ name, email, password });
-      if (result.success) {
-        onClose();
-      } else {
-        setError(result.error || 'Failed to sign up');
-      }
+      await signup(name, mobile, password);
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign up');
     } finally {
@@ -90,15 +92,15 @@ export default function SignupDialog({ onClose, onSwitchToLogin }: SignupDialogP
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email Address
+            <label htmlFor="mobile" className="block text-sm font-medium mb-2">
+              Mobile Number
             </label>
             <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
+              id="mobile"
+              type="tel"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              placeholder="Enter your mobile number"
               required
               disabled={loading}
             />

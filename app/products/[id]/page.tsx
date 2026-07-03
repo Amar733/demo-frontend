@@ -1,16 +1,51 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { notFound, useParams } from 'next/navigation';
 import { getProductById } from '@/lib/products';
 import { formatPrice } from '@/lib/currency';
 import { AddToCartButton } from '@/components/add-to-cart';
 import { Badge } from '@/components/ui/badge';
+import { Product } from '@/types';
 
 export default function ProductPage() {
   const params = useParams();
   const id = params?.id as string;
-  const product = getProductById(id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProduct() {
+      try {
+        const data = await getProductById(id);
+        if (!data) {
+          notFound();
+        }
+        setProduct(data);
+      } catch (error) {
+        console.error('Error loading product:', error);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProduct();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading product...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();

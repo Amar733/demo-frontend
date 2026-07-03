@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hook/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -11,7 +11,7 @@ interface LoginDialogProps {
 }
 
 export default function LoginDialog({ onClose, onSwitchToSignup }: LoginDialogProps) {
-  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,12 +24,8 @@ export default function LoginDialog({ onClose, onSwitchToSignup }: LoginDialogPr
     setLoading(true);
 
     try {
-      const result = await login({ email, password });
-      if (result.success) {
-        onClose();
-      } else {
-        setError(result.error || 'Failed to login');
-      }
+      await login(mobile, password);
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to login');
     } finally {
@@ -59,15 +55,15 @@ export default function LoginDialog({ onClose, onSwitchToSignup }: LoginDialogPr
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email Address
+            <label htmlFor="mobile" className="block text-sm font-medium mb-2">
+              Mobile Number
             </label>
             <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
+              id="mobile"
+              type="tel"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              placeholder="Enter your mobile number"
               required
               disabled={loading}
             />

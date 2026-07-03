@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getProductsSync, getProductsByTypeSync } from '@/lib/products';
 import { Search, X } from 'lucide-react';
@@ -11,7 +11,7 @@ import { api } from '@/lib/api';
 
 type ProductTypeFilter = 'all' | 'perfume' | 'tea' | 'coffee' | 'toy' | 'accessory' | 'bottle' | 'study';
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const [filter, setFilter] = useState<ProductTypeFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -173,5 +173,19 @@ export default function ProductsPage() {
       
       <ProductGrid products={filteredProducts} showAddToCart={true} />
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   );
 }
