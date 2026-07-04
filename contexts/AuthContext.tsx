@@ -20,6 +20,7 @@ interface ExtendedUserData {
   role: string;
   email?: string;
   createdAt?: string;
+  user?: ExtendedUserData;
 }
 
 interface AuthFetchOptions extends RequestInit {
@@ -117,7 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.getMe();
       
       if (response.success && response.data) {
-        const apiData = response.data as ExtendedUserData;
+        const raw = response.data as ExtendedUserData;
+        const apiData = raw.user ?? raw;
         const userData: User = {
           id: apiData.id,
           mobile: apiData.mobile,
@@ -162,7 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.login({ mobile, password });
       
       if (response.success && response.data) {
-        const apiData = response.data as ExtendedUserData;
+        const raw = response.data as ExtendedUserData;
+        const apiData = raw.user ?? raw;
         const userData: User = {
           id: apiData.id,
           mobile: apiData.mobile,
@@ -173,7 +176,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
         
         setUser(userData);
-        // Also store in localStorage for quick access
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
         throw new Error('Login failed');
@@ -189,7 +191,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.register({ name, mobile, password });
       
       if (response.success && response.data) {
-        const apiData = response.data as ExtendedUserData;
+        const raw = response.data as ExtendedUserData;
+        const apiData = raw.user ?? raw;
         const userData: User = {
           id: apiData.id,
           mobile: apiData.mobile,
@@ -200,7 +203,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
         
         setUser(userData);
-        // Also store in localStorage for quick access
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
         throw new Error('Signup failed');
