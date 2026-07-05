@@ -166,34 +166,10 @@ export default function Header() {
                 >
                   All Products
                 </Link>
-                <Link 
-                  href="/collections/summer" 
-                  className="py-3 px-4 hover:bg-gray-100 rounded-md transition-colors"
-                  onClick={closeMobileMenu}
-                >
-                  Summer Collection
-                </Link>
-                <Link 
-                  href="/collections/royal" 
-                  className="py-3 px-4 hover:bg-gray-100 rounded-md transition-colors"
-                  onClick={closeMobileMenu}
-                >
-                  Royal Collection
-                </Link>
-                <Link 
-                  href="/collections/new-arrivals" 
-                  className="py-3 px-4 hover:bg-gray-100 rounded-md transition-colors"
-                  onClick={closeMobileMenu}
-                >
-                  New Arrivals
-                </Link>
-                <Link 
-                  href="/collections/special-pricing" 
-                  className="py-3 px-4 hover:bg-gray-100 rounded-md transition-colors"
-                  onClick={closeMobileMenu}
-                >
-                  Special Pricing
-                </Link>
+              
+               
+               
+               
                 <Link 
                   href="/cart" 
                   className="py-3 px-4 hover:bg-gray-100 rounded-md transition-colors flex items-center gap-2"
