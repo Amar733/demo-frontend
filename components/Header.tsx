@@ -66,18 +66,7 @@ export default function Header() {
             <Link href="/products" className="hover:underline">
               All Products
             </Link>
-            <Link href="/collections/summer" className="hover:underline">
-              Summer Collection
-            </Link>
-            <Link href="/collections/royal" className="hover:underline">
-              Royal Collection
-            </Link>
-            <Link href="/collections/new-arrivals" className="hover:underline">
-              New Arrivals
-            </Link>
-            <Link href="/collections/special-pricing" className="hover:underline">
-              Special Pricing
-            </Link>
+           
             <Link href="/cart" className="hover:underline relative inline-flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
               Cart

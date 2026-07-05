@@ -214,11 +214,7 @@ export default function Home() {
       {/* Product Sections by Category */}
       {!loading && (
         <>
-          <ProductSection 
-            title="✨ New Arrivals" 
-            products={getNewArrivals()} 
-            viewAllLink="/collections/new-arrivals"
-          />
+        
 
           <ProductSection 
             title="☕ Coffee Collection" 
@@ -268,11 +264,7 @@ export default function Home() {
             viewAllLink="/products"
           />
 
-          <ProductSection 
-            title="👔 Accessories" 
-            products={getByType('accessory')} 
-            viewAllLink="/products"
-          />
+          
         </>
       )}
     </div>

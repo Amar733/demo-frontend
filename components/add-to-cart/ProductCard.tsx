@@ -7,6 +7,15 @@ import { formatPrice } from '@/lib/currency';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AddToCartButton } from './AddToCartButton';
+import { API_BASE_URL } from '@/components/config/api';
+
+const BASE_URL = API_BASE_URL.replace('/api', '');
+
+function resolveImageUrl(image: string): string {
+  if (!image) return '';
+  if (image.startsWith('http://') || image.startsWith('https://')) return image;
+  return `${BASE_URL}${image.startsWith('/') ? '' : '/'}${image}`;
+}
 
 interface ProductCardProps {
   product: Product;
@@ -21,13 +30,19 @@ export function ProductCard({ product, showAddToCart = true }: ProductCardProps)
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            className="object-cover hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+          {product.image ? (
+            <Image
+              src={resolveImageUrl(product.image)}
+              alt={product.name}
+              fill
+              className="object-cover hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-4xl">
+              🛍️
+            </div>
+          )}
           
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-2">
