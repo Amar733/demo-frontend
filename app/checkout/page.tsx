@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import LocationPicker from '@/components/LocationPicker';
 import { Plus, MapPin, Check, Trash2, Loader2 } from 'lucide-react';
-import { API_BASE_URL } from '@/components/config/api';
 
 interface Address {
   street: string;
@@ -23,8 +22,8 @@ interface SavedAddress extends Address {
 
 export default function CheckoutPage() {
   const { user, authFetch } = useAuth();
-  const [mobile, setMobile] = useState(user?.mobile || '');
-  const [fullName, setFullName] = useState(user?.name || '');
+  const [mobile, setMobile] = useState('');
+  const [fullName, setFullName] = useState('');
   
   // Saved addresses management
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
@@ -62,11 +61,19 @@ export default function CheckoutPage() {
     }
   };
 
-  // Fetch user addresses on component mount
+  // Fetch user addresses and auto-fill contact info on component mount
   useEffect(() => {
+    // Auto-fill contact information from user profile
+    if (user?.name) {
+      setFullName(user.name);
+    }
+    if (user?.mobile) {
+      setMobile(user.mobile);
+    }
+    
     fetchAddresses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, ''); // Remove non-digit characters
