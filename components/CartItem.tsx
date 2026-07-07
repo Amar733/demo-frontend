@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { CartItem as CartItemType } from '@/types';
+import { formatPrice } from '@/lib/currency';
 
 interface CartItemProps {
   item: CartItemType;
@@ -21,7 +22,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
       
       <div className="flex-1">
         <h3 className="font-semibold">{item.product.name}</h3>
-        <p className="text-gray-600">${item.product.price}</p>
+        <p className="text-gray-600">{formatPrice(item.product.price)}</p>
         
         <div className="flex items-center gap-2 mt-2">
           <button
@@ -47,7 +48,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }: CartItemP
       </div>
       
       <div className="font-bold">
-        ${(item.product.price * item.quantity).toFixed(2)}
+        {formatPrice(item.product.price * item.quantity)}
       </div>
     </div>
   );

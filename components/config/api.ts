@@ -27,4 +27,9 @@ export const API_ENDPOINTS = {
     CREATE: `${API_BASE_URL}/orders`,
     DETAIL: (id: string) => `${API_BASE_URL}/orders/${id}`,
   },
+  USERS: {
+    ADDRESSES: `${API_BASE_URL}/users/addresses`,
+    ADDRESS_DETAIL: (id: string) => `${API_BASE_URL}/users/addresses/${id}`,
+    SET_DEFAULT: (id: string) => `${API_BASE_URL}/users/addresses/${id}/set-default`,
+  },
 };
