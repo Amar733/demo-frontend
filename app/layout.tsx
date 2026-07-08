@@ -19,6 +19,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "E-Shop - Your Complete Online Store",
   description: "Shop perfumes, tea, toys, accessories, water bottles, and study materials all in one place",
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'E-Shop',
+  },
+  formatDetection: { telephone: false },
+  themeColor: '#000000',
 };
 
 export default function RootLayout({
